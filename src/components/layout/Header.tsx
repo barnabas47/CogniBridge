@@ -25,8 +25,8 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="text-sm font-semibold tracking-tight text-[#f5f5f7]">
               CogniBridge
             </span>
-            <span className="text-[10px] font-medium tracking-wide uppercase px-1.5 py-0.2 rounded-full bg-white/[0.08] text-[#86868b]">
-              OS 2.0
+            <span className="text-[10px] font-medium tracking-wide uppercase px-2 py-0.5 rounded-full bg-white/[0.08] text-[#86868b] border border-white/[0.06]">
+              v1.2.1
             </span>
           </div>
         </div>

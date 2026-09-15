@@ -10,7 +10,7 @@ export const ComparisonSlider: React.FC = () => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-    const percentage = Math.max(5, Math.min(95, (x / rect.width) * 100));
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
     setSliderPosition(percentage);
   }, []);
 
@@ -108,7 +108,7 @@ export const ComparisonSlider: React.FC = () => {
             </div>
           </div>
 
-          {/* LEFT / OVERLAY: Dense Bureaucratic Original (Rendered in Apple Titanium Dark) */}
+          {/* LEFT / OVERLAY: Dense Bureaucratic Original */}
           <div
             className="absolute inset-y-0 left-0 overflow-hidden bg-[#1c1c1e] text-[#f5f5f7] border-r border-[#0071e3]/60 shadow-2xl"
             style={{ width: `${sliderPosition}%` }}
@@ -158,25 +158,30 @@ export const ComparisonSlider: React.FC = () => {
         </div>
       </div>
 
-      {/* Perspective Quick Switchers */}
-      <div className="flex justify-center gap-2 mt-3">
+      {/* 2 Full State Toggle Buttons (0% and 100%) */}
+      <div className="flex justify-center gap-3 mt-4">
         <button
-          onClick={() => setSliderPosition(20)}
-          className="text-xs px-3 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-[#86868b] hover:text-[#f5f5f7] transition"
+          onClick={() => setSliderPosition(100)}
+          className={`text-xs px-4 py-1.5 rounded-full transition font-medium flex items-center gap-1.5 border ${
+            sliderPosition >= 99
+              ? 'bg-[#ff453a] text-white border-[#ff453a] shadow-md shadow-[#ff453a]/20'
+              : 'bg-white/[0.06] hover:bg-white/[0.12] text-[#86868b] hover:text-[#f5f5f7] border-white/[0.08]'
+          }`}
         >
-          Eredeti Szöveg
+          <span className="w-2 h-2 rounded-full bg-[#ff453a]" />
+          <span>Eredeti Dokumentum (100%)</span>
         </button>
+
         <button
-          onClick={() => setSliderPosition(50)}
-          className="text-xs px-3.5 py-1 rounded-full bg-[#0071e3] text-white font-medium hover:bg-[#0077ed] transition"
+          onClick={() => setSliderPosition(0)}
+          className={`text-xs px-4 py-1.5 rounded-full transition font-medium flex items-center gap-1.5 border ${
+            sliderPosition <= 1
+              ? 'bg-[#30d158] text-black border-[#30d158] shadow-md shadow-[#30d158]/20 font-semibold'
+              : 'bg-white/[0.06] hover:bg-white/[0.12] text-[#86868b] hover:text-[#f5f5f7] border-white/[0.08]'
+          }`}
         >
-          50 / 50 Összehasonlítás
-        </button>
-        <button
-          onClick={() => setSliderPosition(80)}
-          className="text-xs px-3 py-1 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-[#86868b] hover:text-[#f5f5f7] transition"
-        >
-          CogniBridge HUD
+          <span className="w-2 h-2 rounded-full bg-[#30d158]" />
+          <span>CogniBridge HUD (100%)</span>
         </button>
       </div>
     </div>
