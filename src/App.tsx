@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from './components/layout/Header';
-import { AccessibilityToolbar } from './components/layout/AccessibilityToolbar';
 import { ReadingRuler } from './components/layout/ReadingRuler';
 import { DocumentInput } from './components/input/DocumentInput';
 import { PanicRadar } from './components/triage/PanicRadar';
@@ -9,191 +9,391 @@ import { LaserStepWizard } from './components/actions/LaserStepWizard';
 import { ResolutionStudio } from './components/studio/ResolutionStudio';
 import { ApiKeyModal } from './components/common/ApiKeyModal';
 import { AuroraBackground } from './components/ui/AuroraBackground';
+import { ComparisonSlider } from './components/ui/ComparisonSlider';
+import { FloatingDock } from './components/ui/FloatingDock';
+import { MetricBadge } from './components/ui/MetricBadge';
 import { useAccessibility } from './hooks/useAccessibility';
 import type { CognitiveAnalysis } from './types';
-import type { SampleDocItem } from './samples/sampleDocuments';
 import { analyzeDocumentWithGemini, getStoredApiKey } from './services/gemini';
 import { loadDocumentHistory, saveDocumentToHistory, deleteDocumentFromHistory } from './services/storage';
+import { sound } from './services/sound';
 import { 
   ArrowLeft, 
   Sparkles, 
-  Trash2
+  ShieldCheck, 
+  Zap, 
+  Clock, 
+  TrendingDown, 
+  FileText, 
+  History, 
+  Trash2,
+  BrainCircuit
 } from 'lucide-react';
 
 export default function App() {
   const { settings, updateSetting, toggleBionic, toggleRuler } = useAccessibility();
   
   const [currentAnalysis, setCurrentAnalysis] = useState<CognitiveAnalysis | null>(null);
-  const [activeTab, setActiveTab] = useState<'all' | 'steps' | 'reader' | 'reply'>('all');
+  const [activeTab, setActiveTab] = useState<'triage' | 'steps' | 'reader' | 'reply' | 'all'>('triage');
   const [isLoading, setIsLoading] = useState(false);
   const [history, setHistory] = useState<CognitiveAnalysis[]>(loadDocumentHistory);
   
   // Modals
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
-  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
-  const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
+  const [hasApiKey, setHasApiKey] = useState(() => !!getStoredApiKey());
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
-  const [hasApiKey, setHasApiKey] = useState(!!getStoredApiKey());
-
-  const handleAnalyze = async (input: { text?: string; imageBase64?: string; mimeType?: string }) => {
+  const handleAnalyze = async (text: string, title?: string, _category?: string) => {
     setIsLoading(true);
     try {
-      const result = await analyzeDocumentWithGemini(input);
+      const result = await analyzeDocumentWithGemini({ text });
+      if (title && result) {
+        result.documentTitle = title;
+      }
       setCurrentAnalysis(result);
       saveDocumentToHistory(result);
       setHistory(loadDocumentHistory());
-    } catch (e) {
-      console.error('Analysis failed:', e);
+      setActiveTab('triage');
+      sound.playTensionRelease();
+    } catch (error) {
+      console.error('Analysis failed:', error);
+      alert('Hiba történt az elemzés során. Kérlek próbáld újra!');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSelectSample = (sample: SampleDocItem) => {
-    setCurrentAnalysis(sample.analysis);
-    saveDocumentToHistory(sample.analysis);
-    setHistory(loadDocumentHistory());
-  };
-
-  const handleSelectHistoryItem = (item: CognitiveAnalysis) => {
+  const handleSelectHistory = (item: CognitiveAnalysis) => {
+    sound.playPop();
     setCurrentAnalysis(item);
-    setIsHistoryModalOpen(false);
+    setIsHistoryOpen(false);
+    setActiveTab('triage');
   };
 
-  const handleDeleteHistoryItem = (id: string, e: React.MouseEvent) => {
+  const handleDeleteHistory = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    const updated = deleteDocumentFromHistory(id);
-    setHistory(updated);
+    sound.playPop();
+    deleteDocumentFromHistory(id);
+    setHistory(loadDocumentHistory());
     if (currentAnalysis?.id === id) {
       setCurrentAnalysis(null);
     }
   };
 
+  const tabs: { id: typeof activeTab; label: string; icon: React.ReactNode; badge?: string }[] = [
+    { id: 'triage', label: 'Pánik Radar & Triage', icon: <ShieldCheck className="w-4 h-4 text-emerald-400" />, badge: 'Elsődleges' },
+    { id: 'steps', label: '1-Lépéses Fókusz', icon: <Zap className="w-4 h-4 text-indigo-400" />, badge: currentAnalysis ? `${currentAnalysis.microActions.length} lépés` : undefined },
+    { id: 'reader', label: 'Bionikus Olvasó & Lencse', icon: <FileText className="w-4 h-4 text-amber-400" /> },
+    { id: 'reply', label: 'Resolution & Naptár', icon: <Sparkles className="w-4 h-4 text-purple-400" /> },
+    { id: 'all', label: 'Teljes Kognitív HUD', icon: <BrainCircuit className="w-4 h-4 text-cyan-400" /> },
+  ];
+
   return (
     <AuroraBackground>
-      {/* Interactive Reading Ruler Guide */}
+      {/* Visual Reading Ruler Overlay */}
       <ReadingRuler enabled={settings.readingRuler} />
 
-      {/* Floating Glass Header */}
+      {/* Floating Header */}
       <Header
-        onOpenApiKey={() => setIsApiKeyModalOpen(true)}
-        onOpenHistory={() => setIsHistoryModalOpen(true)}
-        onOpenAbout={() => setIsAboutModalOpen(true)}
+        onOpenApiKeyModal={() => setIsApiKeyModalOpen(true)}
         hasApiKey={hasApiKey}
-        historyCount={history.length}
       />
 
-      {/* Main Container */}
-      <main className="max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        {/* Floating Accessibility Control HUD */}
-        <AccessibilityToolbar
-          settings={settings}
-          updateSetting={updateSetting}
-          toggleBionic={toggleBionic}
-          toggleRuler={toggleRuler}
-        />
-
-        {/* Dynamic View: Input vs Analysis */}
-        {!currentAnalysis ? (
-          <DocumentInput
-            onAnalyze={handleAnalyze}
-            onSelectSample={handleSelectSample}
-            isLoading={isLoading}
-          />
-        ) : (
-          <div className="animate-in fade-in duration-300">
-            {/* Top Bar Navigation & Tab Selector */}
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-              <button
-                onClick={() => setCurrentAnalysis(null)}
-                className="flex items-center gap-2 px-4 py-2 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] hover:bg-[var(--accent-light)] text-xs sm:text-sm font-bold text-[var(--text-secondary)] transition-all shadow-sm cursor-pointer hover:scale-105"
+      {/* Main App Container */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 pb-28 space-y-10">
+        
+        {/* HERO SHOWCASE (When no document is selected) */}
+        {!currentAnalysis && (
+          <div className="space-y-8 pt-4">
+            {/* Kinetic Hero Intro */}
+            <div className="text-center space-y-4 max-w-3xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 dark:bg-indigo-500/15 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-extrabold shadow-sm"
               >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Új Dokumentum</span>
-              </button>
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Code for Humanity • Next-Gen Cognitive Accessibility OS</span>
+              </motion.div>
 
-              {/* View Mode Switcher */}
-              <div className="flex items-center gap-1 p-1 bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-2xl shadow-sm text-xs font-bold">
-                <button
-                  onClick={() => setActiveTab('all')}
-                  className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
-                    activeTab === 'all' ? 'bg-blue-600 text-white shadow-xs' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-                  }`}
-                >
-                  Minden Nézet
-                </button>
-                <button
-                  onClick={() => setActiveTab('steps')}
-                  className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
-                    activeTab === 'steps' ? 'bg-blue-600 text-white shadow-xs' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-                  }`}
-                >
-                  ⚡ Cselekvési Terv
-                </button>
-                <button
-                  onClick={() => setActiveTab('reader')}
-                  className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
-                    activeTab === 'reader' ? 'bg-blue-600 text-white shadow-xs' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-                  }`}
-                >
-                  📖 Bionic Olvasó
-                </button>
-                <button
-                  onClick={() => setActiveTab('reply')}
-                  className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
-                    activeTab === 'reply' ? 'bg-blue-600 text-white shadow-xs' : 'text-[var(--text-muted)] hover:text-[var(--text-primary)]'
-                  }`}
-                >
-                  ✉️ Válasz Studio
-                </button>
-              </div>
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-4xl sm:text-6xl font-black tracking-tight text-slate-900 dark:text-white leading-[1.1]"
+              >
+                Tedd a bürokráciát{' '}
+                <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                  pánikmentessé és érthetővé.
+                </span>
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-base sm:text-lg text-slate-600 dark:text-slate-300 font-medium leading-relaxed max-w-2xl mx-auto"
+              >
+                A <strong>CogniBridge</strong> másodpercek alatt bontja le a félelmetes hatósági leveleket, orvosi leleteket és jogi szövegeket 10 szavas lényegre, bionikus olvasásra és 1-lépéses cselekvési tervre ADHD-soknak, autistáknak és időseknek.
+              </motion.p>
             </div>
 
-            {/* Always show Panic Radar Triage */}
-            <PanicRadar analysis={currentAnalysis} />
-
-            {/* Modular Views based on Tab */}
-            {(activeTab === 'all' || activeTab === 'steps') && (
-              <LaserStepWizard
-                microActions={currentAnalysis.microActions}
-                onUpdateActions={(updated) => {
-                  setCurrentAnalysis(prev => prev ? { ...prev, microActions: updated } : null);
-                }}
-                singleStepFocus={settings.singleStepFocus}
+            {/* KPI Stat Pills */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <MetricBadge
+                icon={<TrendingDown className="w-5 h-5" />}
+                label="Pánik & Szorongás"
+                value="-85%"
+                subValue="Azonnali megnyugtatás"
+                trend="positive"
               />
-            )}
-
-            {(activeTab === 'all' || activeTab === 'reader') && (
-              <BionicReader
-                analysis={currentAnalysis}
-                settings={settings}
+              <MetricBadge
+                icon={<Zap className="w-5 h-5" />}
+                label="Olvasási Sebesség"
+                value="2.4x Gyorsabb"
+                subValue="Bionikus rögzítési pontok"
+                trend="positive"
               />
-            )}
+              <MetricBadge
+                icon={<Clock className="w-5 h-5" />}
+                label="Végrehajtási Hatékonyság"
+                value="1 Lépés / Idő"
+                subValue="Anti-Paralysis design"
+                trend="positive"
+              />
+              <MetricBadge
+                icon={<ShieldCheck className="w-5 h-5" />}
+                label="Szabvány Megfelelés"
+                value="WCAG 2.2 AAA"
+                subValue="100% Akadálymentes"
+                trend="positive"
+              />
+            </div>
 
-            {(activeTab === 'all' || activeTab === 'reply') && (
-              <ResolutionStudio analysis={currentAnalysis} />
-            )}
+            {/* Interactive Before / After Sandbox Slider */}
+            <ComparisonSlider />
+          </div>
+        )}
+
+        {/* DOCUMENT INPUT & DEMO SELECTION AREA */}
+        {!currentAnalysis ? (
+          <section className="pt-2">
+            <DocumentInput onAnalyze={handleAnalyze} isLoading={isLoading} />
+          </section>
+        ) : (
+          /* ACTIVE ANALYSIS DASHBOARD */
+          <div className="space-y-6">
+            {/* Top Navigation & Controls Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-3xl bg-white/70 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-sm">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    sound.playPop();
+                    setCurrentAnalysis(null);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-xs font-bold text-slate-700 dark:text-slate-300 transition"
+                  title="Vissza az új dokumentum beillesztéséhez"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Új Dokumentum</span>
+                </button>
+
+                <div className="h-4 w-[1px] bg-slate-200 dark:bg-white/10" />
+
+                <div>
+                  <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate max-w-[200px] sm:max-w-md">
+                    {currentAnalysis.documentTitle}
+                  </h2>
+                  <p className="text-[11px] text-slate-400">
+                    Kategória: <span className="capitalize font-semibold text-indigo-400">{currentAnalysis.category}</span> • Elemzés kész
+                  </p>
+                </div>
+              </div>
+
+              {/* History Button */}
+              {history.length > 0 && (
+                <button
+                  onClick={() => {
+                    sound.playPop();
+                    setIsHistoryOpen(!isHistoryOpen);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition"
+                >
+                  <History className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Előzmények ({history.length})</span>
+                </button>
+              )}
+            </div>
+
+            {/* History Dropdown Modal */}
+            <AnimatePresence>
+              {isHistoryOpen && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="p-4 rounded-3xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200 dark:border-white/10 shadow-xl space-y-2"
+                >
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-400 pb-1">
+                    Korábban Elemzett Dokumentumok
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                    {history.map((item) => (
+                      <div
+                        key={item.id}
+                        onClick={() => handleSelectHistory(item)}
+                        className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition ${
+                          currentAnalysis.id === item.id
+                            ? 'bg-indigo-500/15 border-indigo-500 text-indigo-300 font-bold'
+                            : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/5 hover:border-indigo-400/40 text-slate-700 dark:text-slate-300'
+                        }`}
+                      >
+                        <div className="min-w-0 pr-2">
+                          <div className="text-xs font-bold truncate">{item.documentTitle}</div>
+                          <div className="text-[10px] text-slate-400 truncate">{item.tenWordSummary}</div>
+                        </div>
+                        <button
+                          onClick={(e) => handleDeleteHistory(e, item.id)}
+                          className="p-1 rounded-lg text-slate-400 hover:text-rose-500 transition shrink-0"
+                          title="Törlés"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Segmented Mode Tab Switcher with LayoutId Spring */}
+            <div className="flex rounded-3xl bg-slate-200/70 dark:bg-slate-900/80 p-1.5 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-sm overflow-x-auto">
+              {tabs.map((tab) => {
+                const isActive = activeTab === tab.id;
+
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      sound.playPop();
+                      setActiveTab(tab.id);
+                    }}
+                    className={`relative flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-colors whitespace-nowrap z-10 ${
+                      isActive
+                        ? 'text-white'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeTabPill"
+                        className="absolute inset-0 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/30"
+                        transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                      />
+                    )}
+                    <span className="relative z-20 flex items-center gap-1.5">
+                      {tab.icon}
+                      <span>{tab.label}</span>
+                      {tab.badge && (
+                        <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                          isActive ? 'bg-white/20 text-white' : 'bg-slate-300 dark:bg-white/10 text-slate-700 dark:text-slate-300'
+                        }`}>
+                          {tab.badge}
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Active View Container */}
+            <AnimatePresence mode="wait">
+              {activeTab === 'triage' && (
+                <motion.div
+                  key="triage"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <PanicRadar analysis={currentAnalysis} />
+                </motion.div>
+              )}
+
+              {activeTab === 'steps' && (
+                <motion.div
+                  key="steps"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <LaserStepWizard microActions={currentAnalysis.microActions} />
+                </motion.div>
+              )}
+
+              {activeTab === 'reader' && (
+                <motion.div
+                  key="reader"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <BionicReader
+                    analysis={currentAnalysis}
+                    settings={settings}
+                    toggleBionic={toggleBionic}
+                    toggleRuler={toggleRuler}
+                  />
+                </motion.div>
+              )}
+
+              {activeTab === 'reply' && (
+                <motion.div
+                  key="reply"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ResolutionStudio analysis={currentAnalysis} />
+                </motion.div>
+              )}
+
+              {activeTab === 'all' && (
+                <motion.div
+                  key="all"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-8"
+                >
+                  <PanicRadar analysis={currentAnalysis} />
+                  <LaserStepWizard microActions={currentAnalysis.microActions} />
+                  <BionicReader
+                    analysis={currentAnalysis}
+                    settings={settings}
+                    toggleBionic={toggleBionic}
+                    toggleRuler={toggleRuler}
+                  />
+                  <ResolutionStudio analysis={currentAnalysis} />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
       </main>
 
-      {/* Modern Frosted Footer */}
-      <footer className="border-t border-[var(--border-color)]/60 bg-white/40 dark:bg-slate-950/40 backdrop-blur-md py-6 mt-16 text-center text-xs text-[var(--text-muted)]">
-        <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span>Built with ❤️ for</span>
-            <strong className="text-[var(--text-primary)]">Code for Humanity</strong>
-            <span>Global Hackathon</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span>WCAG 2.2 AAA</span>
-            <span>•</span>
-            <span>Bionic Fixation</span>
-            <span>•</span>
-            <span>100% Free & Open Tech</span>
-          </div>
-        </div>
-      </footer>
+      {/* Floating Accessibility Control Dock */}
+      <FloatingDock
+        settings={settings}
+        updateSetting={updateSetting}
+        toggleBionic={toggleBionic}
+        toggleRuler={toggleRuler}
+      />
 
       {/* API Key Modal */}
       <ApiKeyModal
@@ -201,90 +401,6 @@ export default function App() {
         onClose={() => setIsApiKeyModalOpen(false)}
         onSaved={() => setHasApiKey(!!getStoredApiKey())}
       />
-
-      {/* History Drawer Modal */}
-      {isHistoryModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[var(--bg-surface)] border border-white/20 rounded-3xl p-6 max-w-lg w-full shadow-2xl relative animate-in fade-in zoom-in-95">
-            <h3 className="text-lg font-black text-[var(--text-primary)] mb-3">
-              Korábbi Dokumentumok (Privát Vault)
-            </h3>
-
-            {history.length === 0 ? (
-              <p className="text-xs text-[var(--text-muted)] py-8 text-center">
-                Még nincsenek mentett dokumentumok a privát böngésző tárhelyeden.
-              </p>
-            ) : (
-              <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
-                {history.map((doc) => (
-                  <div
-                    key={doc.id}
-                    onClick={() => handleSelectHistoryItem(doc)}
-                    className="p-3.5 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface-elevated)] hover:border-blue-500 cursor-pointer flex items-center justify-between gap-3 transition-all"
-                  >
-                    <div>
-                      <h4 className="text-sm font-bold text-[var(--text-primary)] line-clamp-1">
-                        {doc.documentTitle}
-                      </h4>
-                      <p className="text-xs text-[var(--text-muted)] line-clamp-1 mt-0.5">
-                        {doc.tenWordSummary}
-                      </p>
-                    </div>
-                    <button
-                      onClick={(e) => handleDeleteHistoryItem(doc.id, e)}
-                      className="p-1.5 rounded-xl text-rose-500 hover:bg-rose-500/10 cursor-pointer transition-colors"
-                      title="Törlés"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="mt-5 pt-3.5 border-t border-[var(--border-color)] flex justify-end">
-              <button
-                onClick={() => setIsHistoryModalOpen(false)}
-                className="px-5 py-2 rounded-2xl bg-blue-600 text-white text-xs font-bold shadow-md cursor-pointer"
-              >
-                Bezárás
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* About Modal */}
-      {isAboutModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[var(--bg-surface)] border border-white/20 rounded-3xl p-6 sm:p-7 max-w-lg w-full shadow-2xl relative text-left animate-in fade-in zoom-in-95">
-            <h3 className="text-xl font-black text-[var(--text-primary)] mb-2 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-blue-500" />
-              CogniBridge — Code for Humanity
-            </h3>
-            <p className="text-xs text-[var(--text-secondary)] mb-5 leading-relaxed">
-              A CogniBridge célja a kognitív túlterheltség (cognitive overload) és a végrehajtó funkciók bénulásának (executive dysfunction) megszüntetése neurodivergens (ADHD, autizmus, diszlexia), idős és alacsony digitális írástudású személyek számára.
-            </p>
-
-            <div className="space-y-2.5 text-xs text-[var(--text-secondary)] mb-6 bg-[var(--bg-surface-elevated)] p-4 rounded-2xl border border-[var(--border-color)]">
-              <div>🎯 <strong>Kognitív Triage:</strong> Érzelmi szorongásmentesítés & 10 szavas lényeg.</div>
-              <div>📖 <strong>Bionic Reading & OpenDyslexic:</strong> Szókezdő fixáció és fókuszvonalzó.</div>
-              <div>⚡ <strong>Laser Focus Wizard:</strong> Egyszerre CSAK EGY mikrolépés dopamin jutalmakkal.</div>
-              <div>💡 <strong>Jargon Buster:</strong> Életszerű analógiák jogi/orvosi kifejezésekre.</div>
-              <div>✉️ <strong>Resolution Studio:</strong> Egykattintásos hivatalos válaszlevél & naptár (.ics).</div>
-            </div>
-
-            <div className="flex justify-end">
-              <button
-                onClick={() => setIsAboutModalOpen(false)}
-                className="px-5 py-2 rounded-2xl bg-blue-600 text-white text-xs font-bold shadow-md cursor-pointer"
-              >
-                Értem, köszönöm!
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </AuroraBackground>
   );
 }

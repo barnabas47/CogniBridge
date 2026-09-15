@@ -1,90 +1,92 @@
 import React from 'react';
-import { Brain, Key, History, HelpCircle, Sparkles, ShieldCheck } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Sparkles, Key, Activity, ShieldCheck, Heart, Code2 } from 'lucide-react';
+import { GlowingButton } from '../ui/GlowingButton';
 
 interface HeaderProps {
-  onOpenApiKey: () => void;
-  onOpenHistory: () => void;
-  onOpenAbout: () => void;
+  onOpenApiKeyModal: () => void;
   hasApiKey: boolean;
-  historyCount: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  onOpenApiKey,
-  onOpenHistory,
-  onOpenAbout,
+  onOpenApiKeyModal,
   hasApiKey,
-  historyCount
 }) => {
   return (
-    <header className="sticky top-0 z-40 px-4 py-3 backdrop-blur-2xl bg-white/75 dark:bg-slate-950/75 border-b border-[var(--border-color)]/60 transition-colors">
-      <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
-        {/* Apple-style Logo and Brand */}
-        <div className="flex items-center gap-3.5">
-          <div className="relative group">
-            <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 opacity-60 blur-xs group-hover:opacity-100 transition duration-300" />
-            <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-tr from-slate-900 via-indigo-950 to-blue-900 border border-white/20 flex items-center justify-center text-white shadow-md">
-              <Brain className="w-5 h-5 text-blue-300" />
-            </div>
+    <header className="sticky top-4 z-40 w-full px-4 max-w-7xl mx-auto">
+      <motion.div
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        className="flex items-center justify-between px-4 sm:px-6 py-3 rounded-full bg-white/70 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-900/5 dark:shadow-indigo-500/10"
+      >
+        {/* Brand Logo & Name */}
+        <div className="flex items-center gap-3">
+          <div className="relative flex items-center justify-center w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 shadow-md shadow-indigo-500/30 text-white font-black text-lg">
+            <span>CB</span>
+            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
+            </span>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-lg sm:text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-slate-800 to-blue-700 dark:from-white dark:via-slate-100 dark:to-blue-400">
+              <h1 className="text-base sm:text-lg font-extrabold tracking-tight bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 dark:from-white dark:via-indigo-200 dark:to-slate-300 bg-clip-text text-transparent">
                 CogniBridge
-              </span>
-              <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-                <Sparkles className="w-2.5 h-2.5" />
-                Code for Humanity
+              </h1>
+              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                v2.0 OS
               </span>
             </div>
-            <p className="text-[11px] text-[var(--text-muted)] tracking-tight hidden md:block">
-              Cognitive Accessibility & Executive Function Operating System
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">
+              Kognitív Akadálymentesítő & Végrehajtó Funkció Rendszer
             </p>
           </div>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-2">
-          {/* History Button with Badge */}
-          <button
-            onClick={onOpenHistory}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl bg-[var(--bg-surface)] hover:bg-[var(--accent-light)] border border-[var(--border-color)] text-xs font-semibold text-[var(--text-primary)] shadow-xs transition-all cursor-pointer"
-            title="Előzmények megnyitása"
-          >
-            <History className="w-4 h-4 text-[var(--text-muted)]" />
-            <span className="hidden sm:inline">Előzmények</span>
-            {historyCount > 0 && (
-              <span className="px-1.5 py-0.2 text-[10px] font-black bg-blue-600 text-white rounded-full">
-                {historyCount}
-              </span>
-            )}
-          </button>
-
-          {/* Gemini API Pill */}
-          <button
-            onClick={onOpenApiKey}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl border text-xs font-semibold transition-all cursor-pointer ${
-              hasApiKey
-                ? 'border-emerald-400/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
-                : 'border-[var(--border-color)] bg-[var(--bg-surface)] hover:bg-[var(--accent-light)] text-[var(--text-primary)]'
-            }`}
-            title="Google Gemini AI Kulcs beállítása"
-          >
-            <Key className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{hasApiKey ? 'Gemini 2.5 Aktív' : 'AI Motor'}</span>
-            {hasApiKey && <ShieldCheck className="w-3 h-3 text-emerald-500 ml-0.5" />}
-          </button>
-
-          {/* About / Help */}
-          <button
-            onClick={onOpenAbout}
-            className="p-2 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-surface)] hover:bg-[var(--accent-light)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all cursor-pointer"
-            title="A projektről"
-          >
-            <HelpCircle className="w-4 h-4" />
-          </button>
+        {/* Center Live Badges */}
+        <div className="hidden lg:flex items-center gap-3">
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
+            <ShieldCheck className="w-3.5 h-3.5" /> WCAG 2.2 AAA
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 text-xs font-semibold">
+            <Activity className="w-3.5 h-3.5" /> Gemini 2.5 Flash Ready
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-semibold">
+            <Heart className="w-3.5 h-3.5" /> Code for Humanity
+          </div>
         </div>
-      </div>
+
+        {/* Right Action Controls */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* GitHub Repo link */}
+          <a
+            href="https://github.com/barnabas47/CogniBridge"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100/80 dark:bg-white/5 hover:bg-slate-200/80 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 transition"
+            title="GitHub Repository"
+          >
+            <Code2 className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">GitHub</span>
+          </a>
+
+          {/* API Key Modal Button */}
+          <GlowingButton
+            variant={hasApiKey ? 'secondary' : 'primary'}
+            size="sm"
+            onClick={onOpenApiKeyModal}
+            icon={hasApiKey ? <Sparkles className="w-3.5 h-3.5 text-indigo-500" /> : <Key className="w-3.5 h-3.5" />}
+          >
+            <span className="hidden sm:inline">
+              {hasApiKey ? 'Gemini Aktív' : 'API Kulcs'}
+            </span>
+            <span className="sm:hidden">
+              {hasApiKey ? 'AI ON' : 'Kulcs'}
+            </span>
+          </GlowingButton>
+        </div>
+      </motion.div>
     </header>
   );
 };

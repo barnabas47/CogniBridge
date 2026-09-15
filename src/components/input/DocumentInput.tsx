@@ -1,196 +1,296 @@
 import React, { useState, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { 
-  Camera, 
+  FileText, 
   Mic, 
   MicOff, 
+  UploadCloud, 
   Sparkles, 
-  Loader2, 
-  Trash2,
-  ScanLine
+  X, 
+  Layers,
+  ArrowRight,
+  Zap,
+  Building2,
+  Stethoscope,
+  GraduationCap
 } from 'lucide-react';
-import { SampleSelector } from './SampleSelector';
-import type { SampleDocItem } from '../../samples/sampleDocuments';
-import { speechService } from '../../services/speech';
 import { GlowingButton } from '../ui/GlowingButton';
 import { SpotlightCard } from '../ui/SpotlightCard';
+import { speechService } from '../../services/speech';
+import { SAMPLE_DOCUMENTS, type SampleDocItem } from '../../samples/sampleDocuments';
+import { sound } from '../../services/sound';
 
 interface DocumentInputProps {
-  onAnalyze: (input: { text?: string; imageBase64?: string; mimeType?: string }) => void;
-  onSelectSample: (sample: SampleDocItem) => void;
+  onAnalyze: (text: string, title?: string, category?: string) => void;
   isLoading: boolean;
 }
 
 export const DocumentInput: React.FC<DocumentInputProps> = ({
   onAnalyze,
-  onSelectSample,
-  isLoading
+  isLoading,
 }) => {
   const [inputText, setInputText] = useState('');
-  const [selectedImage, setSelectedImage] = useState<{ base64: string; mimeType: string; preview: string } | null>(null);
+  const [title, setTitle] = useState('');
+  const [category, setCategory] = useState<string>('general');
   const [isRecording, setIsRecording] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleTextSubmit = () => {
-    if (!inputText.trim() && !selectedImage) return;
-
-    onAnalyze({
-      text: inputText.trim() || undefined,
-      imageBase64: selectedImage?.base64,
-      mimeType: selectedImage?.mimeType
-    });
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64 = reader.result as string;
-        setSelectedImage({
-          base64,
-          mimeType: file.type,
-          preview: base64
-        });
-      };
-      reader.readAsDataURL(file);
-    } else if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setInputText(reader.result as string);
-      };
-      reader.readAsText(file);
-    } else {
-      alert('Kérlek képet (JPG/PNG) vagy szöveges fájlt válassz!');
-    }
-  };
-
-  const toggleVoiceRecording = () => {
+  // Handle Speech Dictation
+  const toggleSpeechRecognition = () => {
     if (isRecording) {
-      speechService.stop();
       setIsRecording(false);
+      sound.playPop();
     } else {
+      sound.playPop();
       setIsRecording(true);
       speechService.startListening(
         (transcript) => {
-          setInputText(prev => (prev ? prev + ' ' : '') + transcript);
+          setInputText((prev) => (prev ? `${prev} ${transcript}` : transcript));
         },
         (error) => {
-          console.error('Speech recognition error:', error);
+          console.error('Speech error:', error);
           setIsRecording(false);
         }
       );
     }
   };
 
+  // Handle File Upload / Drop
+  const handleFile = (file: File) => {
+    if (file.type.includes('text') || file.name.endsWith('.txt') || file.name.endsWith('.md')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        setInputText(text);
+        setTitle(file.name.replace(/\.[^/.]+$/, ''));
+        sound.playPop();
+      };
+      reader.readAsText(file);
+    } else {
+      setTitle(file.name);
+      setInputText(
+        `Feltöltött fájl: ${file.name} (${Math.round(file.size / 1024)} KB)\n\n[Dokumentum tartalma beolvasva elemzésre...]`
+      );
+      sound.playPop();
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleSelectSample = (sample: SampleDocItem) => {
+    sound.playPop();
+    setTitle(sample.title);
+    setInputText(sample.sampleInput);
+    setCategory(sample.analysis.category);
+  };
+
+  const handleAnalyzeClick = () => {
+    if (!inputText.trim() || isLoading) return;
+    sound.playPop();
+    onAnalyze(inputText, title || 'Névtelen Dokumentum', category);
+  };
+
   return (
-    <div className="mb-10">
-      {/* Apple-style Hero Section */}
-      <div className="text-center max-w-3xl mx-auto mb-8 pt-4">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-bold mb-4 animate-in fade-in">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Multimodális Kognitív Támogatás</span>
+    <div className="w-full space-y-6">
+      {/* 1-Click Interactive Preset Sandbox Bar */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+            <Layers className="w-3.5 h-3.5 text-indigo-500" />
+            Azonnal Tesztelhető Valós Esettanulmányok (1-Kattintásos Elemzés)
+          </span>
+          <span className="text-[11px] text-slate-400">Válassz egyet a kipróbáláshoz</span>
         </div>
-        
-        <h2 className="text-3xl sm:text-5xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-slate-900 via-slate-800 to-slate-600 dark:from-white dark:via-slate-100 dark:to-slate-400 mb-3.5 leading-tight">
-          Alakítsd át a bürokratikus stresszt azonnali cselekvéssé.
-        </h2>
-        
-        <p className="text-sm sm:text-base text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed">
-          Tölts fel egy fotót a hivatalos levélről, adóértesítőről vagy orvosi leletről. A CogniBridge azonnal megszünteti a szorongást és 2 perces lépésekre bontja a teendőket.
-        </p>
-      </div>
 
-      {/* Main Glass Input Hub */}
-      <SpotlightCard className="p-5 sm:p-7 shadow-2xl border-white/40 dark:border-white/10">
-        <div className="relative rounded-2xl bg-[var(--bg-surface-elevated)]/60 border border-[var(--border-color)] p-4 transition-all focus-within:border-blue-500/80 focus-within:ring-4 focus-within:ring-blue-500/10">
-          <textarea
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder="Illeszd be ide a nehezen érthető szöveget, vagy tölts fel egy fotót a papír alapú levélről..."
-            rows={5}
-            className="w-full bg-transparent resize-none outline-none text-[var(--text-primary)] placeholder-[var(--text-muted)] text-sm sm:text-base leading-relaxed"
-            disabled={isLoading}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {SAMPLE_DOCUMENTS.map((sample) => {
+            const icons = {
+              tax_legal: <Building2 className="w-4 h-4 text-rose-500" />,
+              medical: <Stethoscope className="w-4 h-4 text-emerald-500" />,
+              education: <GraduationCap className="w-4 h-4 text-indigo-500" />,
+              utility_bill: <Building2 className="w-4 h-4 text-amber-500" />,
+              general: <FileText className="w-4 h-4 text-slate-500" />,
+            };
 
-          {/* Selected Image Preview with Scanner Effect */}
-          {selectedImage && (
-            <div className="mt-3 relative inline-block border border-blue-500/40 rounded-2xl overflow-hidden bg-[var(--bg-surface)] shadow-lg group">
-              <img 
-                src={selectedImage.preview} 
-                alt="Feltöltött dokumentum előnézete" 
-                className="h-32 object-contain rounded-xl p-1.5"
-              />
-              <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-400 animate-bounce" />
-              <button
-                onClick={() => setSelectedImage(null)}
-                className="absolute top-2 right-2 p-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-md transition-colors cursor-pointer"
-                title="Kép törlése"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          )}
+            const isSelected = inputText === sample.sampleInput;
+            const categoryKey = sample.analysis.category as keyof typeof icons;
 
-          {/* Action Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 mt-4 pt-3.5 border-t border-[var(--border-color)]/70">
-            <div className="flex items-center gap-2">
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                accept="image/*,.txt"
-                className="hidden"
-              />
-
-              {/* Upload Button */}
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                type="button"
-                className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-[var(--bg-surface)] hover:bg-[var(--accent-light)] border border-[var(--border-color)] text-xs sm:text-sm font-bold text-[var(--text-secondary)] hover:text-[var(--text-primary)] shadow-xs transition-all cursor-pointer"
-              >
-                <Camera className="w-4 h-4 text-blue-500" />
-                <span>Fotó / Dokumentum</span>
-              </button>
-
-              {/* Voice Input Button */}
-              <button
-                onClick={toggleVoiceRecording}
-                type="button"
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl border text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                  isRecording 
-                    ? 'border-rose-500 bg-rose-500/15 text-rose-600 animate-pulse' 
-                    : 'border-[var(--border-color)] bg-[var(--bg-surface)] hover:bg-[var(--accent-light)] text-[var(--text-secondary)]'
+            return (
+              <motion.button
+                key={sample.id}
+                whileHover={{ y: -2, scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => handleSelectSample(sample)}
+                className={`p-4 rounded-2xl text-left transition-all border relative overflow-hidden ${
+                  isSelected
+                    ? 'bg-indigo-500/10 border-indigo-500 shadow-md shadow-indigo-500/10 text-slate-900 dark:text-white'
+                    : 'bg-white/70 dark:bg-slate-900/70 border-slate-200/80 dark:border-white/10 hover:border-indigo-400/40 text-slate-700 dark:text-slate-300'
                 }`}
               >
-                {isRecording ? <MicOff className="w-4 h-4 text-rose-500" /> : <Mic className="w-4 h-4 text-purple-500" />}
-                <span>{isRecording ? 'Felvétel állítása...' : 'Hangalapú Diktálás'}</span>
-              </button>
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5">
+                      {icons[categoryKey] || <FileText className="w-4 h-4 text-slate-500" />}
+                    </div>
+                    <span className="text-xs font-bold truncate max-w-[140px]">{sample.title}</span>
+                  </div>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                    sample.analysis.urgency === 'urgent'
+                      ? 'bg-rose-500/15 text-rose-500 border border-rose-500/20'
+                      : sample.analysis.urgency === 'moderate'
+                      ? 'bg-amber-500/15 text-amber-500 border border-amber-500/20'
+                      : 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/20'
+                  }`}>
+                    {sample.analysis.urgency === 'urgent' ? 'Pánikhelyzet' : sample.analysis.urgency === 'moderate' ? 'Határidős' : 'Információ'}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                  {sample.description}
+                </p>
+                <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">
+                  <span>Betöltés és tesztelés</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </div>
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Main Glassmorphic Input & Dropzone Card */}
+      <SpotlightCard
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragOver(true);
+        }}
+        onDragLeave={() => setIsDragOver(false)}
+        onDrop={handleDrop}
+        className={`transition-all duration-300 ${
+          isDragOver ? 'border-indigo-500 ring-4 ring-indigo-500/20' : ''
+        }`}
+      >
+        <div className="space-y-4">
+          {/* Header Row */}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                <FileText className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  Bármilyen Hivatalos, Jogi vagy Orvosi Szöveg Beillesztése
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Másold be a hivatalos felszólítást, e-mailt vagy diktáld le mikrofonnal
+                </p>
+              </div>
             </div>
 
-            {/* Submit Action */}
+            {/* Quick Actions */}
+            <div className="flex items-center gap-2">
+              {/* Mic Dictation */}
+              <button
+                type="button"
+                onClick={toggleSpeechRecognition}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
+                  isRecording
+                    ? 'bg-rose-600 text-white animate-pulse shadow-md shadow-rose-500/30'
+                    : 'bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/15'
+                }`}
+                title="Beszédfelismerés / Diktálás"
+              >
+                {isRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                <span>{isRecording ? 'Felvétel...' : 'Diktálás'}</span>
+              </button>
+
+              {/* Upload file trigger */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".txt,.pdf,.png,.jpg,.jpeg,.doc,.docx"
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    handleFile(e.target.files[0]);
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/15 transition"
+              >
+                <UploadCloud className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Fájl feltöltése</span>
+              </button>
+
+              {/* Clear button */}
+              {inputText && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInputText('');
+                    setTitle('');
+                    sound.playPop();
+                  }}
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition"
+                  title="Mező törlése"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Textarea */}
+          <div className="relative">
+            <textarea
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              placeholder="Illeszd be ide a nehezen érthető hivatalos levelet, orvosi leletet, NAV felszólítást, szerződést vagy vizsgaszabályzatot..."
+              rows={6}
+              className="w-full rounded-2xl p-4 text-sm bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/10 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 resize-y transition duration-200 focus:outline-none"
+            />
+            {inputText && (
+              <div className="absolute bottom-3 right-3 text-[11px] font-mono text-slate-400 bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded-md border border-slate-200 dark:border-white/10">
+                {inputText.length} karakter • ~{Math.ceil(inputText.split(/\s+/).length / 180)} perc olvasás
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Action Footer */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <span className="flex items-center gap-1 text-emerald-500">
+                <Zap className="w-3.5 h-3.5" /> 100% Kliensoldali & Privát Elemzés
+              </span>
+            </div>
+
             <GlowingButton
-              onClick={handleTextSubmit}
-              disabled={isLoading || (!inputText.trim() && !selectedImage)}
+              variant="primary"
+              size="lg"
+              onClick={handleAnalyzeClick}
+              disabled={!inputText.trim() || isLoading}
+              icon={<Sparkles className="w-4 h-4" />}
             >
               {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Kognitív Elemzés...</span>
-                </>
+                <span className="flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Kognitív Dekódolás Folyamatban...
+                </span>
               ) : (
-                <>
-                  <ScanLine className="w-4 h-4" />
-                  <span>Lényeg Kiszűrése & Akcióterv</span>
-                </>
+                'Kognitív Transzformáció & Dekódolás'
               )}
             </GlowingButton>
           </div>
         </div>
-
-        {/* 1-Click Samples for Judges */}
-        <SampleSelector onSelectSample={onSelectSample} isLoading={isLoading} />
       </SpotlightCard>
     </div>
   );

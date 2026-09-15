@@ -1,83 +1,117 @@
 import React, { useState } from 'react';
 import type { KeyEntity } from '../../types';
-import { DollarSign, Calendar, CreditCard, Hash, Phone, Copy, Check } from 'lucide-react';
+import { 
+  DollarSign, 
+  Calendar, 
+  User, 
+  FileText, 
+  HelpCircle, 
+  CreditCard,
+  Copy, 
+  Check, 
+  Clock
+} from 'lucide-react';
+import { sound } from '../../services/sound';
 
 interface KeyEntitiesGridProps {
   entities: KeyEntity[];
 }
 
 export const KeyEntitiesGrid: React.FC<KeyEntitiesGridProps> = ({ entities }) => {
-  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   if (!entities || entities.length === 0) return null;
-
-  const copyToClipboard = (text: string, index: number) => {
-    navigator.clipboard.writeText(text);
-    setCopiedIndex(index);
-    setTimeout(() => setCopiedIndex(null), 2000);
-  };
 
   const getEntityIcon = (type: KeyEntity['type']) => {
     switch (type) {
       case 'money':
-        return <DollarSign className="w-4 h-4 text-emerald-500" />;
+        return <DollarSign className="w-4 h-4 text-amber-500" />;
       case 'deadline':
-        return <Calendar className="w-4 h-4 text-amber-500" />;
-      case 'account':
-        return <CreditCard className="w-4 h-4 text-blue-500" />;
-      case 'reference':
-        return <Hash className="w-4 h-4 text-purple-500" />;
+        return <Calendar className="w-4 h-4 text-rose-500" />;
       case 'contact':
-        return <Phone className="w-4 h-4 text-indigo-500" />;
+        return <User className="w-4 h-4 text-blue-500" />;
+      case 'reference':
+        return <FileText className="w-4 h-4 text-indigo-500" />;
+      case 'account':
+        return <CreditCard className="w-4 h-4 text-purple-500" />;
+      default:
+        return <HelpCircle className="w-4 h-4 text-slate-500" />;
     }
   };
 
+  const handleCopy = (val: string, id: string) => {
+    sound.playPop();
+    navigator.clipboard.writeText(val);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   return (
-    <div className="mt-5 pt-4 border-t border-[var(--border-color)]/70">
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="text-[11px] font-black uppercase tracking-wider text-[var(--text-muted)]">
-          Kiemelt Adatok (1-Kattintásos Másolás):
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+          <span>Kiemelt Kulcsadatok & Azonosítók</span>
         </h4>
-        <span className="text-[10px] text-[var(--text-muted)]">Vágólapra másolás</span>
+        <span className="text-[11px] text-slate-400">1-kattintásos másolás a banki utaláshoz / ügyintézéshez</span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {entities.map((item, idx) => (
-          <div
-            key={idx}
-            className={`p-3.5 rounded-2xl border transition-all duration-200 flex items-center justify-between gap-3 ${
-              item.isUrgent
-                ? 'border-amber-400/50 bg-amber-500/10'
-                : 'border-[var(--border-color)] bg-[var(--bg-surface-elevated)]/60'
-            }`}
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="p-2 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] shrink-0 shadow-xs">
-                {getEntityIcon(item.type)}
+        {entities.map((entity, idx) => {
+          const isCopied = copiedId === `${entity.label}-${idx}`;
+
+          return (
+            <div
+              key={idx}
+              className="group relative p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-white/10 shadow-sm hover:shadow-md hover:border-indigo-500/30 transition-all flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5">
+                      {getEntityIcon(entity.type)}
+                    </div>
+                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400 truncate max-w-[120px]">
+                      {entity.label}
+                    </span>
+                  </div>
+                  {entity.isUrgent && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                      <Clock className="w-2.5 h-2.5" /> Sürgős
+                    </span>
+                  )}
+                </div>
+
+                <div className="text-base font-bold text-slate-900 dark:text-white font-mono break-all my-1 select-all">
+                  {entity.value}
+                </div>
               </div>
-              <div className="min-w-0">
-                <span className="text-[10px] block text-[var(--text-muted)] font-bold truncate uppercase tracking-tight">
-                  {item.label}
-                </span>
-                <span className="text-xs sm:text-sm font-extrabold text-[var(--text-primary)] truncate block">
-                  {item.value}
-                </span>
+
+              <div className="mt-3 pt-2 border-t border-slate-100 dark:border-white/5 flex items-center justify-end">
+                <button
+                  type="button"
+                  onClick={() => handleCopy(entity.value, `${entity.label}-${idx}`)}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition ${
+                    isCopied
+                      ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold'
+                      : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400'
+                  }`}
+                >
+                  {isCopied ? (
+                    <>
+                      <Check className="w-3 h-3 text-emerald-500" />
+                      <span>Másolva!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3" />
+                      <span>Másolás</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
-
-            <button
-              onClick={() => copyToClipboard(item.value, idx)}
-              className="p-2 rounded-xl bg-[var(--bg-surface)] hover:bg-[var(--accent-light)] border border-[var(--border-color)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-all shrink-0 cursor-pointer shadow-xs"
-              title="Másolás"
-            >
-              {copiedIndex === idx ? (
-                <Check className="w-3.5 h-3.5 text-emerald-500" />
-              ) : (
-                <Copy className="w-3.5 h-3.5" />
-              )}
-            </button>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

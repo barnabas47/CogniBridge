@@ -85,6 +85,22 @@
   }
 }
 
+/* Custom Keyframe Animations */
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) skewX(-20deg);
+  }
+  50%, 100% {
+    transform: translateX(200%) skewX(-20deg);
+  }
+}
+
+@keyframes border-beam {
+  100% {
+    offset-distance: 100%;
+  }
+}
+
 /* Custom Accessibility Fonts */
 @font-face {
   font-family: 'OpenDyslexic';

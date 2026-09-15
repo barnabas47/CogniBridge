@@ -1,24 +1,40 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 
-export const AudioVisualizer: React.FC<{ isPlaying: boolean; className?: string }> = ({ 
-  isPlaying, 
-  className = '' 
+interface AudioVisualizerProps {
+  isPlaying: boolean;
+  barCount?: number;
+  className?: string;
+}
+
+export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
+  isPlaying,
+  barCount = 14,
+  className = '',
 }) => {
-  const heights = [12, 24, 16, 28, 20, 14, 26, 18];
-
   return (
-    <div className={`flex items-center gap-1 h-7 px-2.5 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 border border-blue-500/20 ${className}`}>
-      {heights.map((h, i) => (
-        <span
+    <div className={`flex items-end gap-[3px] h-6 px-2 py-1 rounded-full bg-slate-900/60 backdrop-blur-md border border-white/10 ${className}`}>
+      {Array.from({ length: barCount }).map((_, i) => (
+        <motion.div
           key={i}
-          className={`w-1 bg-blue-600 dark:bg-blue-400 rounded-full transition-all duration-300 ${
-            isPlaying ? 'animate-pulse' : 'opacity-40'
-          }`}
-          style={{
-            height: isPlaying ? `${h}px` : '6px',
-            animationDelay: `${i * 120}ms`,
-            animationDuration: '600ms'
-          }}
+          className="w-[3px] rounded-full bg-gradient-to-t from-indigo-500 to-purple-400"
+          animate={
+            isPlaying
+              ? {
+                  height: ['20%', `${Math.floor(Math.sin(i * 0.8 + 1) * 45 + 50)}%`, '20%'],
+                }
+              : { height: '20%' }
+          }
+          transition={
+            isPlaying
+              ? {
+                  duration: 0.5 + (i % 5) * 0.1,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                  delay: i * 0.04,
+                }
+              : { duration: 0.2 }
+          }
         />
       ))}
     </div>
