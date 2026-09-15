@@ -18,30 +18,30 @@ export const MetricBadge: React.FC<MetricBadgeProps> = ({
   trend = 'neutral',
   className = '',
 }) => {
-  const trendColors = {
-    positive: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
-    neutral: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
-    urgent: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
+  const trendAccent = {
+    positive: 'text-[#30d158] bg-[#30d158]/10 border-[#30d158]/20',
+    neutral: 'text-[#2997ff] bg-[#2997ff]/10 border-[#2997ff]/20',
+    urgent: 'text-[#ff453a] bg-[#ff453a]/10 border-[#ff453a]/20',
   };
 
   return (
     <motion.div
-      whileHover={{ y: -2, scale: 1.02 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-      className={`flex items-center gap-3 p-3.5 rounded-2xl bg-white/60 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/80 dark:border-white/10 shadow-sm ${className}`}
+      whileHover={{ y: -2 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      className={`flex items-center gap-3.5 p-4 rounded-3xl bg-[#161617]/85 backdrop-blur-2xl border border-white/[0.08] shadow-xl ${className}`}
     >
-      <div className={`p-2.5 rounded-xl border ${trendColors[trend]} shrink-0`}>
+      <div className={`p-2.5 rounded-2xl border ${trendAccent[trend]} shrink-0`}>
         {icon}
       </div>
       <div className="min-w-0">
-        <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+        <div className="text-[11px] font-medium text-[#86868b] tracking-wide uppercase truncate">
           {label}
         </div>
-        <div className="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate">
+        <div className="text-lg sm:text-xl font-bold tracking-tight text-[#f5f5f7] truncate">
           {value}
         </div>
         {subValue && (
-          <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
+          <div className="text-[11px] text-[#86868b] truncate">
             {subValue}
           </div>
         )}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from './components/layout/Header';
 import { ReadingRuler } from './components/layout/ReadingRuler';
@@ -12,6 +12,7 @@ import { AuroraBackground } from './components/ui/AuroraBackground';
 import { ComparisonSlider } from './components/ui/ComparisonSlider';
 import { FloatingDock } from './components/ui/FloatingDock';
 import { MetricBadge } from './components/ui/MetricBadge';
+import { GlowingButton } from './components/ui/GlowingButton';
 import { useAccessibility } from './hooks/useAccessibility';
 import type { CognitiveAnalysis } from './types';
 import { analyzeDocumentWithGemini, getStoredApiKey } from './services/gemini';
@@ -27,7 +28,8 @@ import {
   FileText, 
   History, 
   Trash2,
-  BrainCircuit
+  BrainCircuit,
+  ArrowDown
 } from 'lucide-react';
 
 export default function App() {
@@ -42,6 +44,13 @@ export default function App() {
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [hasApiKey, setHasApiKey] = useState(() => !!getStoredApiKey());
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
+  const inputSectionRef = useRef<HTMLDivElement>(null);
+
+  const scrollToInput = () => {
+    sound.playPop();
+    inputSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const handleAnalyze = async (text: string, title?: string, _category?: string) => {
     setIsLoading(true);
@@ -81,11 +90,11 @@ export default function App() {
   };
 
   const tabs: { id: typeof activeTab; label: string; icon: React.ReactNode; badge?: string }[] = [
-    { id: 'triage', label: 'Pánik Radar & Triage', icon: <ShieldCheck className="w-4 h-4 text-emerald-400" />, badge: 'Elsődleges' },
-    { id: 'steps', label: '1-Lépéses Fókusz', icon: <Zap className="w-4 h-4 text-indigo-400" />, badge: currentAnalysis ? `${currentAnalysis.microActions.length} lépés` : undefined },
-    { id: 'reader', label: 'Bionikus Olvasó & Lencse', icon: <FileText className="w-4 h-4 text-amber-400" /> },
-    { id: 'reply', label: 'Resolution & Naptár', icon: <Sparkles className="w-4 h-4 text-purple-400" /> },
-    { id: 'all', label: 'Teljes Kognitív HUD', icon: <BrainCircuit className="w-4 h-4 text-cyan-400" /> },
+    { id: 'triage', label: 'Pánik Radar & Triage', icon: <ShieldCheck className="w-4 h-4 text-[#30d158]" />, badge: 'Elsődleges' },
+    { id: 'steps', label: '1-Lépéses Fókusz', icon: <Zap className="w-4 h-4 text-[#2997ff]" />, badge: currentAnalysis ? `${currentAnalysis.microActions.length} lépés` : undefined },
+    { id: 'reader', label: 'Bionikus Olvasó & Lencse', icon: <FileText className="w-4 h-4 text-[#ff9f0a]" /> },
+    { id: 'reply', label: 'Resolution Studio', icon: <Sparkles className="w-4 h-4 text-[#a259ff]" /> },
+    { id: 'all', label: 'Teljes Kognitív HUD', icon: <BrainCircuit className="w-4 h-4 text-[#2997ff]" /> },
   ];
 
   return (
@@ -93,38 +102,38 @@ export default function App() {
       {/* Visual Reading Ruler Overlay */}
       <ReadingRuler enabled={settings.readingRuler} />
 
-      {/* Floating Header */}
+      {/* Apple Frosted Glass Header */}
       <Header
         onOpenApiKeyModal={() => setIsApiKeyModalOpen(true)}
         hasApiKey={hasApiKey}
       />
 
-      {/* Main App Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 pb-28 space-y-10">
+      {/* Main Container */}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 pb-32 space-y-12">
         
-        {/* HERO SHOWCASE (When no document is selected) */}
+        {/* CINEMATIC APPLE KEYNOTE HERO (When no document is active) */}
         {!currentAnalysis && (
-          <div className="space-y-8 pt-4">
-            {/* Kinetic Hero Intro */}
-            <div className="text-center space-y-4 max-w-3xl mx-auto">
+          <div className="space-y-12 pt-4">
+            {/* Giant Apple Typography */}
+            <div className="text-center space-y-5 max-w-4xl mx-auto">
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 dark:bg-indigo-500/15 border border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-xs font-extrabold shadow-sm"
+                className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/[0.08] border border-white/[0.12] text-[#86868b] text-xs font-normal shadow-sm"
               >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Code for Humanity • Next-Gen Cognitive Accessibility OS</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#30d158] animate-pulse" />
+                <span>Code for Humanity • Kognitív Akadálymentesítő OS</span>
               </motion.div>
 
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-4xl sm:text-6xl font-black tracking-tight text-slate-900 dark:text-white leading-[1.1]"
+                className="text-5xl sm:text-7xl font-bold tracking-tight text-[#f5f5f7] leading-[1.08]"
               >
-                Tedd a bürokráciát{' '}
-                <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                  pánikmentessé és érthetővé.
+                Bürokrácia.{' '}
+                <span className="apple-intelligence-text">
+                  Pánik nélkül.
                 </span>
               </motion.h1>
 
@@ -132,13 +141,38 @@ export default function App() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="text-base sm:text-lg text-slate-600 dark:text-slate-300 font-medium leading-relaxed max-w-2xl mx-auto"
+                className="text-lg sm:text-xl text-[#86868b] font-normal leading-relaxed max-w-2xl mx-auto"
               >
-                A <strong>CogniBridge</strong> másodpercek alatt bontja le a félelmetes hatósági leveleket, orvosi leleteket és jogi szövegeket 10 szavas lényegre, bionikus olvasásra és 1-lépéses cselekvési tervre ADHD-soknak, autistáknak és időseknek.
+                A világ első kognitív operációs rendszere ADHD-sok, autisták és idősek számára. Másodpercek alatt változtatja a bürokratikus káoszt 10 szavas lényeggé és 1-lépéses cselekvéssé.
               </motion.p>
+
+              {/* Apple Call to Action Buttons */}
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="flex flex-wrap items-center justify-center gap-3 pt-2"
+              >
+                <GlowingButton
+                  variant="primary"
+                  size="lg"
+                  onClick={scrollToInput}
+                  icon={<ArrowDown className="w-4 h-4" />}
+                >
+                  Dokumentum Beillesztése
+                </GlowingButton>
+                
+                <GlowingButton
+                  variant="secondary"
+                  size="lg"
+                  onClick={scrollToInput}
+                >
+                  Minták Kipróbálása
+                </GlowingButton>
+              </motion.div>
             </div>
 
-            {/* KPI Stat Pills */}
+            {/* Apple Pro Titanium Metric Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               <MetricBadge
                 icon={<TrendingDown className="w-5 h-5" />}
@@ -156,56 +190,56 @@ export default function App() {
               />
               <MetricBadge
                 icon={<Clock className="w-5 h-5" />}
-                label="Végrehajtási Hatékonyság"
+                label="Végrehajtás"
                 value="1 Lépés / Idő"
                 subValue="Anti-Paralysis design"
                 trend="positive"
               />
               <MetricBadge
                 icon={<ShieldCheck className="w-5 h-5" />}
-                label="Szabvány Megfelelés"
+                label="Akadálymentes"
                 value="WCAG 2.2 AAA"
-                subValue="100% Akadálymentes"
+                subValue="100% szabványos"
                 trend="positive"
               />
             </div>
 
-            {/* Interactive Before / After Sandbox Slider */}
+            {/* Apple Hardware Studio Frame: Comparison Sandbox */}
             <ComparisonSlider />
           </div>
         )}
 
         {/* DOCUMENT INPUT & DEMO SELECTION AREA */}
         {!currentAnalysis ? (
-          <section className="pt-2">
+          <section ref={inputSectionRef} className="pt-4">
             <DocumentInput onAnalyze={handleAnalyze} isLoading={isLoading} />
           </section>
         ) : (
           /* ACTIVE ANALYSIS DASHBOARD */
           <div className="space-y-6">
             {/* Top Navigation & Controls Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-3xl bg-white/70 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-3xl bg-[#161617]/85 backdrop-blur-2xl border border-white/[0.08] shadow-xl">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => {
                     sound.playPop();
                     setCurrentAnalysis(null);
                   }}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-xs font-bold text-slate-700 dark:text-slate-300 transition"
-                  title="Vissza az új dokumentum beillesztéséhez"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/[0.08] hover:bg-white/[0.14] text-xs font-medium text-[#f5f5f7] transition"
+                  title="Vissza a főoldalra"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span>Új Dokumentum</span>
                 </button>
 
-                <div className="h-4 w-[1px] bg-slate-200 dark:bg-white/10" />
+                <div className="h-4 w-[1px] bg-white/[0.1]" />
 
                 <div>
-                  <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-white truncate max-w-[200px] sm:max-w-md">
+                  <h2 className="text-sm sm:text-base font-bold text-[#f5f5f7] truncate max-w-[200px] sm:max-w-md">
                     {currentAnalysis.documentTitle}
                   </h2>
-                  <p className="text-[11px] text-slate-400">
-                    Kategória: <span className="capitalize font-semibold text-indigo-400">{currentAnalysis.category}</span> • Elemzés kész
+                  <p className="text-[11px] text-[#86868b]">
+                    Kategória: <span className="capitalize text-[#2997ff]">{currentAnalysis.category}</span> • Elemzés kész
                   </p>
                 </div>
               </div>
@@ -217,9 +251,9 @@ export default function App() {
                     sound.playPop();
                     setIsHistoryOpen(!isHistoryOpen);
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium bg-white/[0.08] text-[#86868b] hover:text-[#f5f5f7] hover:bg-white/[0.14] transition"
                 >
-                  <History className="w-3.5 h-3.5 text-indigo-400" />
+                  <History className="w-3.5 h-3.5 text-[#2997ff]" />
                   <span>Előzmények ({history.length})</span>
                 </button>
               )}
@@ -232,9 +266,9 @@ export default function App() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="p-4 rounded-3xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200 dark:border-white/10 shadow-xl space-y-2"
+                  className="p-4 rounded-3xl bg-[#1c1c1e]/95 backdrop-blur-2xl border border-white/[0.12] shadow-2xl space-y-2"
                 >
-                  <div className="text-xs font-bold uppercase tracking-wider text-slate-400 pb-1">
+                  <div className="text-xs font-semibold uppercase tracking-wider text-[#86868b] pb-1 px-1">
                     Korábban Elemzett Dokumentumok
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
@@ -242,19 +276,19 @@ export default function App() {
                       <div
                         key={item.id}
                         onClick={() => handleSelectHistory(item)}
-                        className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition ${
+                        className={`p-3 rounded-2xl border flex items-center justify-between cursor-pointer transition ${
                           currentAnalysis.id === item.id
-                            ? 'bg-indigo-500/15 border-indigo-500 text-indigo-300 font-bold'
-                            : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/5 hover:border-indigo-400/40 text-slate-700 dark:text-slate-300'
+                            ? 'bg-[#0071e3]/20 border-[#0071e3] text-[#2997ff] font-semibold'
+                            : 'bg-black/40 border-white/[0.08] hover:border-white/[0.2] text-[#86868b] hover:text-[#f5f5f7]'
                         }`}
                       >
                         <div className="min-w-0 pr-2">
-                          <div className="text-xs font-bold truncate">{item.documentTitle}</div>
-                          <div className="text-[10px] text-slate-400 truncate">{item.tenWordSummary}</div>
+                          <div className="text-xs font-medium truncate text-[#f5f5f7]">{item.documentTitle}</div>
+                          <div className="text-[10px] text-[#86868b] truncate">{item.tenWordSummary}</div>
                         </div>
                         <button
                           onClick={(e) => handleDeleteHistory(e, item.id)}
-                          className="p-1 rounded-lg text-slate-400 hover:text-rose-500 transition shrink-0"
+                          className="p-1 rounded-lg text-[#6e6e73] hover:text-[#ff453a] transition shrink-0"
                           title="Törlés"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -266,8 +300,8 @@ export default function App() {
               )}
             </AnimatePresence>
 
-            {/* Segmented Mode Tab Switcher with LayoutId Spring */}
-            <div className="flex rounded-3xl bg-slate-200/70 dark:bg-slate-900/80 p-1.5 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-sm overflow-x-auto">
+            {/* Apple Segmented Mode Tab Switcher with LayoutId Spring */}
+            <div className="flex rounded-full bg-[#161617]/90 p-1 backdrop-blur-2xl border border-white/[0.08] shadow-xl overflow-x-auto">
               {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;
 
@@ -278,25 +312,25 @@ export default function App() {
                       sound.playPop();
                       setActiveTab(tab.id);
                     }}
-                    className={`relative flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-colors whitespace-nowrap z-10 ${
+                    className={`relative flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-colors whitespace-nowrap z-10 ${
                       isActive
-                        ? 'text-white'
-                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                        ? 'text-[#f5f5f7]'
+                        : 'text-[#86868b] hover:text-[#f5f5f7]'
                     }`}
                   >
                     {isActive && (
                       <motion.div
                         layoutId="activeTabPill"
-                        className="absolute inset-0 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-500/30"
-                        transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                        className="absolute inset-0 bg-[#2c2c2e] rounded-full border border-white/[0.12] shadow-sm"
+                        transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                       />
                     )}
                     <span className="relative z-20 flex items-center gap-1.5">
                       {tab.icon}
                       <span>{tab.label}</span>
                       {tab.badge && (
-                        <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                          isActive ? 'bg-white/20 text-white' : 'bg-slate-300 dark:bg-white/10 text-slate-700 dark:text-slate-300'
+                        <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-semibold ${
+                          isActive ? 'bg-white/[0.15] text-white' : 'bg-white/[0.06] text-[#86868b]'
                         }`}>
                           {tab.badge}
                         </span>
@@ -312,10 +346,10 @@ export default function App() {
               {activeTab === 'triage' && (
                 <motion.div
                   key="triage"
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.18 }}
                 >
                   <PanicRadar analysis={currentAnalysis} />
                 </motion.div>
@@ -324,10 +358,10 @@ export default function App() {
               {activeTab === 'steps' && (
                 <motion.div
                   key="steps"
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.18 }}
                 >
                   <LaserStepWizard microActions={currentAnalysis.microActions} />
                 </motion.div>
@@ -336,10 +370,10 @@ export default function App() {
               {activeTab === 'reader' && (
                 <motion.div
                   key="reader"
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.18 }}
                 >
                   <BionicReader
                     analysis={currentAnalysis}
@@ -353,10 +387,10 @@ export default function App() {
               {activeTab === 'reply' && (
                 <motion.div
                   key="reply"
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.18 }}
                 >
                   <ResolutionStudio analysis={currentAnalysis} />
                 </motion.div>
@@ -365,10 +399,10 @@ export default function App() {
               {activeTab === 'all' && (
                 <motion.div
                   key="all"
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.18 }}
                   className="space-y-8"
                 >
                   <PanicRadar analysis={currentAnalysis} />
@@ -387,7 +421,7 @@ export default function App() {
         )}
       </main>
 
-      {/* Floating Accessibility Control Dock */}
+      {/* Floating Accessibility Island */}
       <FloatingDock
         settings={settings}
         updateSetting={updateSetting}

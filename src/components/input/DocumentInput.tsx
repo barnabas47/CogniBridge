@@ -9,7 +9,7 @@ import {
   X, 
   Layers,
   ArrowRight,
-  Zap,
+  ShieldCheck,
   Building2,
   Stethoscope,
   GraduationCap
@@ -99,24 +99,24 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
 
   return (
     <div className="w-full space-y-6">
-      {/* 1-Click Interactive Preset Sandbox Bar */}
+      {/* Interactive Apple Preset Sandbox Bar */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-indigo-500" />
-            Azonnal Tesztelhető Valós Esettanulmányok (1-Kattintásos Elemzés)
+        <div className="flex items-center justify-between px-1">
+          <span className="text-xs font-semibold uppercase tracking-wider text-[#86868b] flex items-center gap-1.5">
+            <Layers className="w-3.5 h-3.5 text-[#2997ff]" />
+            Azonnal Tesztelhető Esettanulmányok
           </span>
-          <span className="text-[11px] text-slate-400">Válassz egyet a kipróbáláshoz</span>
+          <span className="text-[11px] text-[#6e6e73]">1-kattintásos betöltés</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {SAMPLE_DOCUMENTS.map((sample) => {
             const icons = {
-              tax_legal: <Building2 className="w-4 h-4 text-rose-500" />,
-              medical: <Stethoscope className="w-4 h-4 text-emerald-500" />,
-              education: <GraduationCap className="w-4 h-4 text-indigo-500" />,
-              utility_bill: <Building2 className="w-4 h-4 text-amber-500" />,
-              general: <FileText className="w-4 h-4 text-slate-500" />,
+              tax_legal: <Building2 className="w-4 h-4 text-[#ff453a]" />,
+              medical: <Stethoscope className="w-4 h-4 text-[#30d158]" />,
+              education: <GraduationCap className="w-4 h-4 text-[#2997ff]" />,
+              utility_bill: <Building2 className="w-4 h-4 text-[#ff9f0a]" />,
+              general: <FileText className="w-4 h-4 text-[#86868b]" />,
             };
 
             const isSelected = inputText === sample.sampleInput;
@@ -125,37 +125,39 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
             return (
               <motion.button
                 key={sample.id}
-                whileHover={{ y: -2, scale: 1.01 }}
+                whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.99 }}
                 onClick={() => handleSelectSample(sample)}
-                className={`p-4 rounded-2xl text-left transition-all border relative overflow-hidden ${
+                className={`p-5 rounded-3xl text-left transition-all border relative overflow-hidden ${
                   isSelected
-                    ? 'bg-indigo-500/10 border-indigo-500 shadow-md shadow-indigo-500/10 text-slate-900 dark:text-white'
-                    : 'bg-white/70 dark:bg-slate-900/70 border-slate-200/80 dark:border-white/10 hover:border-indigo-400/40 text-slate-700 dark:text-slate-300'
+                    ? 'bg-[#1c1c1e] border-[#0071e3] shadow-lg text-[#f5f5f7]'
+                    : 'bg-[#161617]/85 border-white/[0.08] hover:border-white/[0.2] text-[#86868b]'
                 }`}
               >
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5">
-                      {icons[categoryKey] || <FileText className="w-4 h-4 text-slate-500" />}
+                <div className="flex items-start justify-between gap-2 mb-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 rounded-2xl bg-white/[0.06]">
+                      {icons[categoryKey] || <FileText className="w-4 h-4 text-[#86868b]" />}
                     </div>
-                    <span className="text-xs font-bold truncate max-w-[140px]">{sample.title}</span>
+                    <span className="text-xs font-semibold text-[#f5f5f7] truncate max-w-[140px]">
+                      {sample.title}
+                    </span>
                   </div>
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                  <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-semibold uppercase tracking-wider ${
                     sample.analysis.urgency === 'urgent'
-                      ? 'bg-rose-500/15 text-rose-500 border border-rose-500/20'
+                      ? 'bg-[#ff453a]/15 text-[#ff453a] border border-[#ff453a]/30'
                       : sample.analysis.urgency === 'moderate'
-                      ? 'bg-amber-500/15 text-amber-500 border border-amber-500/20'
-                      : 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/20'
+                      ? 'bg-[#ff9f0a]/15 text-[#ff9f0a] border border-[#ff9f0a]/30'
+                      : 'bg-[#30d158]/15 text-[#30d158] border border-[#30d158]/30'
                   }`}>
                     {sample.analysis.urgency === 'urgent' ? 'Pánikhelyzet' : sample.analysis.urgency === 'moderate' ? 'Határidős' : 'Információ'}
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-[#86868b] line-clamp-2 leading-relaxed">
                   {sample.description}
                 </p>
-                <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">
-                  <span>Betöltés és tesztelés</span>
+                <div className="mt-3 pt-2.5 border-t border-white/[0.06] flex items-center justify-between text-xs font-medium text-[#2997ff]">
+                  <span>Tesztelés betöltése</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </div>
               </motion.button>
@@ -164,7 +166,7 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
         </div>
       </div>
 
-      {/* Main Glassmorphic Input & Dropzone Card */}
+      {/* Main Apple Studio Input & Dropzone Card */}
       <SpotlightCard
         onDragOver={(e) => {
           e.preventDefault();
@@ -173,44 +175,41 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
         onDragLeave={() => setIsDragOver(false)}
         onDrop={handleDrop}
         className={`transition-all duration-300 ${
-          isDragOver ? 'border-indigo-500 ring-4 ring-indigo-500/20' : ''
+          isDragOver ? 'border-[#0071e3] ring-2 ring-[#0071e3]/40' : ''
         }`}
       >
         <div className="space-y-4">
           {/* Header Row */}
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-2xl bg-[#0071e3]/15 text-[#2997ff]">
                 <FileText className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  Bármilyen Hivatalos, Jogi vagy Orvosi Szöveg Beillesztése
+                <h3 className="text-sm sm:text-base font-semibold text-[#f5f5f7]">
+                  Bármilyen Hivatalos vagy Orvosi Szöveg Beillesztése
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-[#86868b]">
                   Másold be a hivatalos felszólítást, e-mailt vagy diktáld le mikrofonnal
                 </p>
               </div>
             </div>
 
-            {/* Quick Actions */}
+            {/* Actions */}
             <div className="flex items-center gap-2">
-              {/* Mic Dictation */}
               <button
                 type="button"
                 onClick={toggleSpeechRecognition}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
+                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition ${
                   isRecording
-                    ? 'bg-rose-600 text-white animate-pulse shadow-md shadow-rose-500/30'
-                    : 'bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/15'
+                    ? 'bg-[#ff453a] text-white animate-pulse shadow-md shadow-[#ff453a]/30'
+                    : 'bg-white/[0.08] hover:bg-white/[0.14] text-[#f5f5f7]'
                 }`}
-                title="Beszédfelismerés / Diktálás"
               >
                 {isRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
                 <span>{isRecording ? 'Felvétel...' : 'Diktálás'}</span>
               </button>
 
-              {/* Upload file trigger */}
               <input
                 ref={fileInputRef}
                 type="file"
@@ -225,13 +224,12 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/15 transition"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium bg-white/[0.08] hover:bg-white/[0.14] text-[#f5f5f7] transition"
               >
                 <UploadCloud className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Fájl feltöltése</span>
               </button>
 
-              {/* Clear button */}
               {inputText && (
                 <button
                   type="button"
@@ -240,8 +238,8 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
                     setTitle('');
                     sound.playPop();
                   }}
-                  className="p-1.5 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition"
-                  title="Mező törlése"
+                  className="p-1.5 rounded-full text-[#86868b] hover:text-[#ff453a] hover:bg-[#ff453a]/10 transition"
+                  title="Törlés"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -249,28 +247,27 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
             </div>
           </div>
 
-          {/* Textarea */}
+          {/* Pure Dark Glass Textarea */}
           <div className="relative">
             <textarea
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Illeszd be ide a nehezen érthető hivatalos levelet, orvosi leletet, NAV felszólítást, szerződést vagy vizsgaszabályzatot..."
+              placeholder="Illeszd be ide a nehezen érthető hivatalos levelet, orvosi leletet, NAV felszólítást, szerződést vagy szabályzatot..."
               rows={6}
-              className="w-full rounded-2xl p-4 text-sm bg-slate-50/50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/10 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 resize-y transition duration-200 focus:outline-none"
+              className="w-full rounded-2xl p-4 text-xs sm:text-sm bg-black/60 border border-white/[0.08] focus:border-[#0071e3] focus:ring-1 focus:ring-[#0071e3] text-[#f5f5f7] placeholder-[#6e6e73] resize-y transition focus:outline-none leading-relaxed font-sans"
             />
             {inputText && (
-              <div className="absolute bottom-3 right-3 text-[11px] font-mono text-slate-400 bg-white/80 dark:bg-slate-900/80 px-2 py-0.5 rounded-md border border-slate-200 dark:border-white/10">
-                {inputText.length} karakter • ~{Math.ceil(inputText.split(/\s+/).length / 180)} perc olvasás
+              <div className="absolute bottom-3 right-3 text-[11px] font-mono text-[#86868b] bg-[#161617]/90 px-2.5 py-0.5 rounded-full border border-white/[0.08]">
+                {inputText.length} karakter
               </div>
             )}
           </div>
 
-          {/* Bottom Action Footer */}
+          {/* Action Row */}
           <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-              <span className="flex items-center gap-1 text-emerald-500">
-                <Zap className="w-3.5 h-3.5" /> 100% Kliensoldali & Privát Elemzés
-              </span>
+            <div className="flex items-center gap-1.5 text-xs text-[#86868b]">
+              <ShieldCheck className="w-4 h-4 text-[#30d158]" />
+              <span>100% Kliensoldali & Biztonságos Kognitív Elemzés</span>
             </div>
 
             <GlowingButton
@@ -283,10 +280,10 @@ export const DocumentInput: React.FC<DocumentInputProps> = ({
               {isLoading ? (
                 <span className="flex items-center gap-2">
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Kognitív Dekódolás Folyamatban...
+                  Kognitív Dekódolás...
                 </span>
               ) : (
-                'Kognitív Transzformáció & Dekódolás'
+                'Kognitív Transzformáció'
               )}
             </GlowingButton>
           </div>

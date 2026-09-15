@@ -5,21 +5,26 @@ export const AuroraBackground: React.FC<{ children: React.ReactNode; className?:
   className = '',
 }) => {
   return (
-    <div className={`relative min-h-screen w-full overflow-hidden bg-slate-950 text-slate-100 ${className}`}>
-      {/* Background Animated Blobs */}
+    <div className={`relative min-h-screen w-full overflow-hidden bg-black text-[#f5f5f7] ${className}`}>
+      {/* Apple Intelligence Siri Fluid Ambient Aura */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
-        <div className="absolute -top-[25%] -left-[10%] w-[600px] sm:w-[800px] h-[600px] sm:h-[800px] rounded-full bg-gradient-to-br from-indigo-600/25 via-purple-600/20 to-transparent blur-[120px] animate-pulse duration-[8000ms]" />
-        <div className="absolute top-[30%] -right-[15%] w-[500px] sm:w-[700px] h-[500px] sm:h-[700px] rounded-full bg-gradient-to-bl from-cyan-600/20 via-blue-600/15 to-transparent blur-[130px] animate-pulse duration-[10000ms]" />
-        <div className="absolute -bottom-[20%] left-[20%] w-[600px] sm:w-[900px] h-[600px] sm:h-[900px] rounded-full bg-gradient-to-tr from-emerald-600/15 via-indigo-600/20 to-transparent blur-[140px] animate-pulse duration-[12000ms]" />
-        
-        {/* Subtle Cyber Dot Matrix Overlay */}
+        {/* Deep Violet Glow */}
         <div 
-          className="absolute inset-0 opacity-[0.18] dark:opacity-[0.25]"
-          style={{
-            backgroundImage: `radial-gradient(rgba(255, 255, 255, 0.25) 1px, transparent 1px)`,
-            backgroundSize: '24px 24px',
-          }}
+          className="absolute -top-[20%] left-1/2 -translate-x-1/2 w-[700px] sm:w-[1100px] h-[500px] sm:h-[700px] rounded-full bg-gradient-to-b from-[#2997ff]/20 via-[#a259ff]/15 to-transparent blur-[140px]"
+          style={{ animation: 'apple-glow 14s ease-in-out infinite alternate' }}
         />
+        {/* Soft Amber / Coral Accent */}
+        <div 
+          className="absolute top-[35%] -left-[15%] w-[500px] sm:w-[800px] h-[500px] sm:h-[800px] rounded-full bg-gradient-to-tr from-[#ff3b30]/10 via-[#ff9500]/10 to-transparent blur-[160px]"
+          style={{ animation: 'apple-glow 18s ease-in-out infinite alternate-reverse' }}
+        />
+        {/* Emerald Calming Glow */}
+        <div 
+          className="absolute bottom-[10%] -right-[15%] w-[500px] sm:w-[800px] h-[500px] sm:h-[800px] rounded-full bg-gradient-to-bl from-[#30d158]/10 via-[#2997ff]/10 to-transparent blur-[160px]"
+          style={{ animation: 'apple-glow 16s ease-in-out infinite alternate' }}
+        />
+        {/* Subtle Fine Grain Vignette */}
+        <div className="absolute inset-0 bg-radial from-transparent via-black/40 to-black pointer-events-none" />
       </div>
 
       <div className="relative z-10">{children}</div>

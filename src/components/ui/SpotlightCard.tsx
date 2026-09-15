@@ -15,7 +15,7 @@ interface SpotlightCardProps {
 export const SpotlightCard: React.FC<SpotlightCardProps> = ({
   children,
   className = '',
-  spotlightColor = 'rgba(99, 102, 241, 0.15)',
+  spotlightColor = 'rgba(255, 255, 255, 0.06)',
   tiltEffect = false,
   onClick,
   onDragOver,
@@ -37,8 +37,8 @@ export const SpotlightCard: React.FC<SpotlightCardProps> = ({
     if (tiltEffect) {
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
-      const rotateX = ((y - centerY) / centerY) * -4;
-      const rotateY = ((x - centerX) / centerX) * 4;
+      const rotateX = ((y - centerY) / centerY) * -3;
+      const rotateY = ((x - centerX) / centerX) * 3;
       setTilt({ rotateX, rotateY });
     }
   }, [tiltEffect]);
@@ -70,20 +70,20 @@ export const SpotlightCard: React.FC<SpotlightCardProps> = ({
       }}
       transition={{ type: 'spring', stiffness: 350, damping: 25 }}
       style={{ perspective: 1000 }}
-      className={`relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-white/10 bg-white/70 dark:bg-slate-900/80 backdrop-blur-2xl p-6 shadow-xl shadow-slate-900/5 dark:shadow-indigo-500/5 transition-colors duration-300 ${className}`}
+      className={`relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#161617]/85 backdrop-blur-2xl p-6 sm:p-8 shadow-2xl transition-all duration-300 text-[#f5f5f7] ${className}`}
     >
-      {/* Spotlight Radial Follower */}
+      {/* Subtle Apple Radial Spotlight */}
       <div
         className="pointer-events-none absolute -inset-px transition-opacity duration-300 z-10"
         style={{
           opacity,
-          background: `radial-gradient(550px circle at ${position.x}px ${position.y}px, ${spotlightColor}, transparent 80%)`,
+          background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, ${spotlightColor}, transparent 70%)`,
         }}
       />
-      {/* Glare border glow */}
+      {/* Subtle Apple specular border */}
       <div
-        className="pointer-events-none absolute inset-0 rounded-[inherit] transition-opacity duration-300 z-10 border border-indigo-500/20"
-        style={{ opacity: opacity * 0.7 }}
+        className="pointer-events-none absolute inset-0 rounded-[inherit] transition-opacity duration-300 z-10 border border-white/[0.12]"
+        style={{ opacity: opacity * 0.8 }}
       />
       <div className="relative z-20">{children}</div>
     </motion.div>
