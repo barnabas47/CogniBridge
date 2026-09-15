@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-primary: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-surface-elevated: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --accent-color: #3b82f6;
+    --accent-light: #eff6ff;
+    --ring-color: #93c5fd;
+    --ruler-mask: rgba(15, 23, 42, 0.45);
+  }
+
+  /* Soft Sage Theme (Sensory Calming) */
+  [data-theme="sage"] {
+    --bg-primary: #f2f7f4;
+    --bg-surface: #ffffff;
+    --bg-surface-elevated: #e8f1ec;
+    --text-primary: #1e3329;
+    --text-secondary: #3b574a;
+    --text-muted: #5e7e70;
+    --border-color: #cbdad1;
+    --accent-color: #2e7d5e;
+    --accent-light: #e6f4ed;
+    --ring-color: #8ed0b5;
+    --ruler-mask: rgba(30, 51, 41, 0.5);
+  }
+
+  /* Warm Sepia Theme (Eye Strain Reduction) */
+  [data-theme="sepia"] {
+    --bg-primary: #fbf7ee;
+    --bg-surface: #fffdf9;
+    --bg-surface-elevated: #f4ecdc;
+    --text-primary: #433422;
+    --text-secondary: #63503a;
+    --text-muted: #88745d;
+    --border-color: #e6dccb;
+    --accent-color: #b46b1a;
+    --accent-light: #fef5e7;
+    --ring-color: #eac593;
+    --ruler-mask: rgba(67, 52, 34, 0.5);
+  }
+
+  /* Dyslexia Yellow / High Legibility Tint */
+  [data-theme="yellow"] {
+    --bg-primary: #fdfae6;
+    --bg-surface: #fffee9;
+    --bg-surface-elevated: #f8f1c8;
+    --text-primary: #1a1a1a;
+    --text-secondary: #333333;
+    --text-muted: #555555;
+    --border-color: #e4d89a;
+    --accent-color: #0d6efd;
+    --accent-light: #e3eeff;
+    --ring-color: #79aeff;
+    --ruler-mask: rgba(0, 0, 0, 0.55);
+  }
+
+  /* OLED High Contrast Dark Theme */
+  [data-theme="dark"] {
+    --bg-primary: #090a0f;
+    --bg-surface: #13151f;
+    --bg-surface-elevated: #1c1f2e;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --border-color: #2e344a;
+    --accent-color: #60a5fa;
+    --accent-light: #1e293b;
+    --ring-color: #3b82f6;
+    --ruler-mask: rgba(0, 0, 0, 0.75);
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.25s ease, color 0.25s ease;
+    min-height: 100vh;
+    margin: 0;
+    overflow-x: hidden;
+  }
+}
+
+/* Custom Accessibility Fonts */
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('https://cdn.jsdelivr.net/npm/opendyslexic@2.0.0/dist/OpenDyslexic-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-dyslexic {
+  font-family: 'OpenDyslexic', 'Lexend', sans-serif !important;
+}
+
+.font-lexend {
+  font-family: 'Lexend', system-ui, sans-serif !important;
+}
+
+/* Reading Ruler Overlay */
+.reading-ruler-overlay {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+}
+
+/* Custom Scrollbar for sensory comfort */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
