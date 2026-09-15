@@ -15,7 +15,7 @@ interface SpotlightCardProps {
 export const SpotlightCard: React.FC<SpotlightCardProps> = ({
   children,
   className = '',
-  spotlightColor = 'rgba(255, 255, 255, 0.06)',
+  spotlightColor = 'rgba(255, 255, 255, 0.08)',
   tiltEffect = false,
   onClick,
   onDragOver,
@@ -70,7 +70,7 @@ export const SpotlightCard: React.FC<SpotlightCardProps> = ({
       }}
       transition={{ type: 'spring', stiffness: 350, damping: 25 }}
       style={{ perspective: 1000 }}
-      className={`relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#161617]/85 backdrop-blur-2xl p-6 sm:p-8 shadow-2xl transition-all duration-300 text-[#f5f5f7] ${className}`}
+      className={`relative overflow-hidden rounded-3xl border border-[var(--border-color)] bg-[var(--bg-surface)]/90 backdrop-blur-2xl p-6 sm:p-8 shadow-2xl transition-colors duration-300 text-[var(--text-primary)] ${className}`}
     >
       {/* Subtle Apple Radial Spotlight */}
       <div
@@ -82,7 +82,7 @@ export const SpotlightCard: React.FC<SpotlightCardProps> = ({
       />
       {/* Subtle Apple specular border */}
       <div
-        className="pointer-events-none absolute inset-0 rounded-[inherit] transition-opacity duration-300 z-10 border border-white/[0.12]"
+        className="pointer-events-none absolute inset-0 rounded-[inherit] transition-opacity duration-300 z-10 border border-white/[0.08]"
         style={{ opacity: opacity * 0.8 }}
       />
       <div className="relative z-20">{children}</div>

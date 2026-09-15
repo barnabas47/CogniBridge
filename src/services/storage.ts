@@ -8,11 +8,11 @@ export const DEFAULT_SETTINGS: AccessibilitySettings = {
   fontSize: 18,
   lineSpacing: 1.7,
   letterSpacing: 0.3,
-  theme: 'light',
+  theme: 'dark',
   bionicReading: false,
   readingRuler: false,
   singleStepFocus: true,
-  speechRate: 1.0
+  speechRate: 1.0,
 };
 
 export function loadAccessibilitySettings(): AccessibilitySettings {
@@ -21,21 +21,47 @@ export function loadAccessibilitySettings(): AccessibilitySettings {
     if (raw) {
       return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
     }
-  } catch (e) {}
+  } catch {}
   return DEFAULT_SETTINGS;
 }
 
 export function saveAccessibilitySettings(settings: AccessibilitySettings): void {
   try {
     localStorage.setItem(STORAGE_SETTINGS_KEY, JSON.stringify(settings));
-    applyThemeToDom(settings.theme);
-  } catch (e) {}
+    applySettingsToDom(settings);
+  } catch {}
+}
+
+export function applySettingsToDom(settings: AccessibilitySettings): void {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+
+  // 1. Theme application
+  if (settings.theme === 'dark') {
+    root.removeAttribute('data-theme');
+  } else {
+    root.setAttribute('data-theme', settings.theme);
+  }
+
+  // 2. Font family application
+  root.classList.remove('font-dyslexic', 'font-lexend', 'font-sans');
+  if (settings.fontFamily === 'dyslexic') {
+    root.classList.add('font-dyslexic');
+  } else if (settings.fontFamily === 'lexend') {
+    root.classList.add('font-lexend');
+  } else {
+    root.classList.add('font-sans');
+  }
+
+  // 3. Dynamic Font Size & Line Height variables
+  root.style.setProperty('--app-font-size', `${settings.fontSize}px`);
+  root.style.setProperty('--app-line-height', `${settings.lineSpacing}`);
 }
 
 export function applyThemeToDom(theme: string): void {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
-  if (theme === 'light') {
+  if (theme === 'dark') {
     root.removeAttribute('data-theme');
   } else {
     root.setAttribute('data-theme', theme);
@@ -48,23 +74,23 @@ export function loadDocumentHistory(): CognitiveAnalysis[] {
     if (raw) {
       return JSON.parse(raw);
     }
-  } catch (e) {}
+  } catch {}
   return [];
 }
 
 export function saveDocumentToHistory(analysis: CognitiveAnalysis): void {
   try {
     const history = loadDocumentHistory();
-    const updated = [analysis, ...history.filter(h => h.id !== analysis.id)].slice(0, 15);
+    const updated = [analysis, ...history.filter((h) => h.id !== analysis.id)].slice(0, 15);
     localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(updated));
-  } catch (e) {}
+  } catch {}
 }
 
 export function deleteDocumentFromHistory(id: string): CognitiveAnalysis[] {
   try {
-    const history = loadDocumentHistory().filter(h => h.id !== id);
+    const history = loadDocumentHistory().filter((h) => h.id !== id);
     localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(history));
     return history;
-  } catch (e) {}
+  } catch {}
   return [];
 }

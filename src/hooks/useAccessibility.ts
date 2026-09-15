@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import type { AccessibilitySettings } from '../types';
-import { loadAccessibilitySettings, saveAccessibilitySettings, applyThemeToDom } from '../services/storage';
+import { loadAccessibilitySettings, saveAccessibilitySettings, applySettingsToDom } from '../services/storage';
 
 export function useAccessibility() {
   const [settings, setSettings] = useState<AccessibilitySettings>(loadAccessibilitySettings);
 
   useEffect(() => {
-    applyThemeToDom(settings.theme);
-  }, [settings.theme]);
+    applySettingsToDom(settings);
+  }, [settings]);
 
   const updateSetting = <K extends keyof AccessibilitySettings>(
     key: K, 
